@@ -24,51 +24,95 @@ npm --version
 - Activity hub with recent ride cards and canvas route thumbnails.
 - GPX/XML drop-zone that parses `<trkpt>` coordinates, elevation gain, distance, and duration directly in the browser.
 
-## Step-by-step collection checklist
+## Collected project choices
 
-Use this checklist to gather the things needed to turn the prototype into a real routing app. Do not paste private API keys into public GitHub repos. Save them somewhere safe for now; later they will go into a local `.env` file.
+Use this section as the current project brief. Do not paste private API keys into public GitHub repos. Public browser map tokens can be used in frontend code later, but they should still be restricted to allowed domains.
+
+```text
+Launch area: York Region and Toronto
+Ride types: All types
+Important roads/trails/neighborhoods: TBD
+Map provider: MapTiler
+Map style URL: TBD
+Public map token: Created in MapTiler; do not commit here
+Weather provider: TBD
+Routing engine: TBD
+OSM extract URL: TBD
+Elevation provider: TBD
+Database provider: TBD
+User accounts needed: TBD
+Sample GPX files ready: TBD
+Logo/brand ready: TBD
+Preferred first milestone: TBD
+```
+
+## Step-by-step collection checklist
 
 ### Step 1: Pick the launch area
 
-Choose the first city or region where AeroRoute should work.
+Status: done.
 
-Collect:
-
-- City/region name, for example `Toronto, Ontario`.
-- Approximate map bounds, or a simple description like `downtown Toronto to Scarborough`.
-- Whether the app should focus on road cycling, gravel, commuting, touring, or all of them.
-
-What to send me:
+Collected:
 
 ```text
-Launch area:
-Ride types:
-Important roads/trails/neighborhoods:
+Launch area: York Region and Toronto
+Ride types: All types
+Important roads/trails/neighborhoods: TBD
 ```
+
+Optional later detail:
+
+- List important cycling corridors, trails, or neighborhoods.
+- Examples: Don Valley trails, Waterfront Trail, Finch Hydro Corridor, Richmond Hill, Markham, Vaughan, Scarborough.
 
 ### Step 2: Choose a map provider
 
-The current prototype uses a free public Carto demo style. For a real app, use a provider with your own account and usage limits.
+Status: in progress.
 
-Recommended easiest options:
+You created a MapTiler API key. Since the key appeared in a screenshot, do one of these before using it in a public app:
 
-- MapTiler: good MapLibre support and simple style URLs.
-- Mapbox: polished maps, very common, requires a token.
-- Stadia Maps: good OpenMapTiles-compatible option.
+- Preferred: restrict the key to allowed HTTP origins.
+- Extra safe: click `REPLACE` in MapTiler and create a fresh key, then restrict the new key.
 
-Collect:
+In MapTiler, collect:
 
-- Provider name.
-- Public map style URL.
-- Public browser token if the provider requires one.
-
-What to send me:
+1. Go to `API Keys`.
+2. Open or edit the key.
+3. Set allowed HTTP origins for local development:
 
 ```text
-Map provider:
-Style URL:
-Public map token:
+http://localhost:*
+http://127.0.0.1:*
 ```
+
+4. Later, add the production website domain, for example:
+
+```text
+https://your-domain.com
+```
+
+5. Go to `Maps`.
+6. Pick a style. Recommended for this cycling app:
+
+```text
+Outdoor
+```
+
+7. Copy the MapLibre/GL style URL. It will look similar to:
+
+```text
+https://api.maptiler.com/maps/outdoor-v2/style.json?key=YOUR_MAPTILER_KEY
+```
+
+What to send me next:
+
+```text
+Map provider: MapTiler
+Style URL:
+Public map token is restricted: yes/no
+```
+
+Do not send the key if you are uncomfortable sharing it. You can say `key ready`, and I will show you where to paste it locally.
 
 ### Step 3: Create a weather API account
 
@@ -76,18 +120,13 @@ Weather powers temperature, precipitation, wind speed, and wind direction.
 
 Recommended easiest option:
 
-- OpenWeatherMap. Create a free account, then create an API key.
-
-Other good options:
-
-- Tomorrow.io.
-- Meteomatics.
+- OpenWeatherMap.
 
 Collect:
 
 - Weather provider name.
 - API key.
-- The units you want: metric or imperial.
+- Units: metric or imperial.
 
 What to send me:
 
@@ -97,17 +136,15 @@ Units:
 API key is ready: yes/no
 ```
 
-You do not need to paste the secret key into chat if you do not want to. I can show you where to put it locally.
-
 ### Step 4: Choose routing data
 
-Routing needs OpenStreetMap data for your launch area. The common production setup is Valhalla with an `.osm.pbf` extract.
+Routing needs OpenStreetMap data for York Region and Toronto. The recommended routing engine is Valhalla.
 
 Recommended path:
 
 1. Install Docker Desktop.
-2. Download an OpenStreetMap extract from Geofabrik or BBBike.
-3. Start with one region, not the whole world.
+2. Download an OpenStreetMap extract for Ontario or a custom Toronto/York Region area.
+3. Start with one region before expanding.
 
 Useful sources:
 
@@ -116,13 +153,6 @@ Useful sources:
 - Valhalla project: `https://github.com/valhalla/valhalla`
 
 Collect:
-
-- Routing engine choice: `Valhalla` recommended.
-- OSM extract download URL.
-- Region name.
-- Whether Docker Desktop is installed.
-
-What to send me:
 
 ```text
 Routing engine:
@@ -137,16 +167,10 @@ Elevation is needed for climbing, slope coloring, and route gain calculations.
 Simplest options:
 
 - OpenTopoData API for early development.
-- Mapbox Terrain-RGB if using Mapbox.
+- MapTiler terrain/elevation services if available in your plan.
 - Local DEM files later for production-quality routing.
 
 Collect:
-
-- Elevation provider.
-- API key if required.
-- Whether the launch area has good elevation coverage.
-
-What to send me:
 
 ```text
 Elevation provider:
@@ -165,12 +189,6 @@ Recommended options:
 - Neon or Railway Postgres: also fine, but confirm PostGIS support.
 
 Collect:
-
-- Database provider.
-- Whether PostGIS is supported.
-- Whether you want user accounts and private ride history.
-
-What to send me:
 
 ```text
 Database provider:
@@ -198,8 +216,6 @@ Ride examples:
 
 ### Step 8: Collect brand and content
 
-This lets the app feel like your product instead of a generic demo.
-
 Collect:
 
 - Logo file, preferably SVG or PNG.
@@ -220,12 +236,10 @@ Contact email:
 
 ### Step 9: Decide the first real build target
 
-Pick one first milestone so development stays focused.
-
 Recommended milestone:
 
 ```text
-MVP: Next.js app with real map provider, weather endpoint, GPX upload, and demo routing.
+MVP: Next.js app with real MapTiler map, weather endpoint, GPX upload, and demo routing.
 ```
 
 More advanced milestone:
@@ -242,6 +256,7 @@ When you have the basics, send me this:
 Launch area:
 Ride types:
 Map provider:
+Map style URL:
 Weather provider:
 Routing engine:
 OSM extract URL:
