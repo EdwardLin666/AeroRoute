@@ -24,15 +24,234 @@ npm --version
 - Activity hub with recent ride cards and canvas route thumbnails.
 - GPX/XML drop-zone that parses `<trkpt>` coordinates, elevation gain, distance, and duration directly in the browser.
 
-## Production data needed
+## Step-by-step collection checklist
 
-To turn the prototype into the full platform, collect these:
+Use this checklist to gather the things needed to turn the prototype into a real routing app. Do not paste private API keys into public GitHub repos. Save them somewhere safe for now; later they will go into a local `.env` file.
 
-- Map tiles: create a MapTiler, Mapbox, Stadia Maps, or self-hosted tile account and replace the style URL in `app.js`.
-- Weather: create an OpenWeatherMap, Tomorrow.io, or Meteomatics API key and connect it through a backend endpoint instead of exposing keys in the browser.
-- Routing: run Valhalla or BRouter with OpenStreetMap extracts for your target region, then swap the demo route variants for API responses.
-- Elevation: use Mapbox Terrain-RGB, AWS Terrain Tiles, OpenTopoData, or a local DEM import.
-- Brand assets: provide a logo, exact color palette, and any product copy you want reflected in the UI.
+### Step 1: Pick the launch area
+
+Choose the first city or region where AeroRoute should work.
+
+Collect:
+
+- City/region name, for example `Toronto, Ontario`.
+- Approximate map bounds, or a simple description like `downtown Toronto to Scarborough`.
+- Whether the app should focus on road cycling, gravel, commuting, touring, or all of them.
+
+What to send me:
+
+```text
+Launch area:
+Ride types:
+Important roads/trails/neighborhoods:
+```
+
+### Step 2: Choose a map provider
+
+The current prototype uses a free public Carto demo style. For a real app, use a provider with your own account and usage limits.
+
+Recommended easiest options:
+
+- MapTiler: good MapLibre support and simple style URLs.
+- Mapbox: polished maps, very common, requires a token.
+- Stadia Maps: good OpenMapTiles-compatible option.
+
+Collect:
+
+- Provider name.
+- Public map style URL.
+- Public browser token if the provider requires one.
+
+What to send me:
+
+```text
+Map provider:
+Style URL:
+Public map token:
+```
+
+### Step 3: Create a weather API account
+
+Weather powers temperature, precipitation, wind speed, and wind direction.
+
+Recommended easiest option:
+
+- OpenWeatherMap. Create a free account, then create an API key.
+
+Other good options:
+
+- Tomorrow.io.
+- Meteomatics.
+
+Collect:
+
+- Weather provider name.
+- API key.
+- The units you want: metric or imperial.
+
+What to send me:
+
+```text
+Weather provider:
+Units:
+API key is ready: yes/no
+```
+
+You do not need to paste the secret key into chat if you do not want to. I can show you where to put it locally.
+
+### Step 4: Choose routing data
+
+Routing needs OpenStreetMap data for your launch area. The common production setup is Valhalla with an `.osm.pbf` extract.
+
+Recommended path:
+
+1. Install Docker Desktop.
+2. Download an OpenStreetMap extract from Geofabrik or BBBike.
+3. Start with one region, not the whole world.
+
+Useful sources:
+
+- Geofabrik downloads: `https://download.geofabrik.de/`
+- BBBike extracts: `https://extract.bbbike.org/`
+- Valhalla project: `https://github.com/valhalla/valhalla`
+
+Collect:
+
+- Routing engine choice: `Valhalla` recommended.
+- OSM extract download URL.
+- Region name.
+- Whether Docker Desktop is installed.
+
+What to send me:
+
+```text
+Routing engine:
+OSM extract URL:
+Docker installed:
+```
+
+### Step 5: Choose elevation data
+
+Elevation is needed for climbing, slope coloring, and route gain calculations.
+
+Simplest options:
+
+- OpenTopoData API for early development.
+- Mapbox Terrain-RGB if using Mapbox.
+- Local DEM files later for production-quality routing.
+
+Collect:
+
+- Elevation provider.
+- API key if required.
+- Whether the launch area has good elevation coverage.
+
+What to send me:
+
+```text
+Elevation provider:
+API key needed:
+Coverage checked:
+```
+
+### Step 6: Decide where activities will be saved
+
+The prototype parses GPX files in the browser, but a real app needs storage.
+
+Recommended options:
+
+- Supabase Postgres: easiest hosted PostgreSQL/PostGIS path.
+- Local PostgreSQL/PostGIS in Docker: good for development.
+- Neon or Railway Postgres: also fine, but confirm PostGIS support.
+
+Collect:
+
+- Database provider.
+- Whether PostGIS is supported.
+- Whether you want user accounts and private ride history.
+
+What to send me:
+
+```text
+Database provider:
+PostGIS supported:
+User accounts needed:
+```
+
+### Step 7: Gather sample activity files
+
+Sample rides help test upload, maps, distance, elevation gain, and stats.
+
+Collect:
+
+- 2 or 3 GPX files from Garmin, Wahoo, Strava, Apple Watch, or another tracker.
+- Optional FIT files if you want FIT support later.
+- A note about which file should represent road, gravel, and climbing.
+
+What to send me:
+
+```text
+Sample GPX files ready:
+Need FIT support:
+Ride examples:
+```
+
+### Step 8: Collect brand and content
+
+This lets the app feel like your product instead of a generic demo.
+
+Collect:
+
+- Logo file, preferably SVG or PNG.
+- Brand colors, or 2 to 4 websites/apps whose style you like.
+- Short tagline.
+- Any exact wording you want on the site.
+- Contact/support email if this will become public.
+
+What to send me:
+
+```text
+Logo ready:
+Brand colors:
+Tagline:
+Style references:
+Contact email:
+```
+
+### Step 9: Decide the first real build target
+
+Pick one first milestone so development stays focused.
+
+Recommended milestone:
+
+```text
+MVP: Next.js app with real map provider, weather endpoint, GPX upload, and demo routing.
+```
+
+More advanced milestone:
+
+```text
+Routing MVP: Next.js app plus Valhalla backend using real OSM data and custom route preferences.
+```
+
+### Step 10: Send this filled-out summary
+
+When you have the basics, send me this:
+
+```text
+Launch area:
+Ride types:
+Map provider:
+Weather provider:
+Routing engine:
+OSM extract URL:
+Elevation provider:
+Database provider:
+User accounts needed:
+Sample GPX files ready:
+Logo/brand ready:
+Preferred first milestone:
+```
 
 ## Original blueprint
 
