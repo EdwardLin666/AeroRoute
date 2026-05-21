@@ -33,7 +33,7 @@ Launch area: York Region and Toronto
 Ride types: All types
 Important roads/trails/neighborhoods: TBD
 Map provider: MapTiler
-Map style URL: MapTiler Outdoor in local config.js
+Map style URL: MapTiler Outdoor v4 in local config.js
 Public map token: Created in MapTiler and stored locally in config.js; do not commit
 Weather provider: TBD
 Routing engine: TBD
@@ -93,7 +93,7 @@ your-domain.com
 ?
 ```
 
-7. Because a key appeared in a screenshot, replace this key before production.
+7. Because development keys appeared during setup, replace the local key before production.
 8. Go to `Maps`.
 9. Pick a style. Recommended for this cycling app:
 
@@ -104,14 +104,14 @@ Outdoor
 10. Copy the MapLibre/GL style URL. It will look similar to:
 
 ```text
-https://api.maptiler.com/maps/outdoor-v2/style.json?key=YOUR_MAPTILER_KEY
+https://api.maptiler.com/maps/outdoor-v4/style.json?key=YOUR_MAPTILER_KEY
 ```
 
 Collected for local development:
 
 ```text
 Map provider: MapTiler
-Style URL: MapTiler Outdoor in local config.js
+Style URL: MapTiler Outdoor v4 in local config.js
 Public map token is restricted: no, local development only
 ```
 
