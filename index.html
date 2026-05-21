@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AeroRoute Cycling Platform</title>
+    <meta
+      name="description"
+      content="AeroRoute is a context-aware cycling route planner with smart routing controls, weather overlays, and activity import tools."
+    />
+    <link rel="preconnect" href="https://unpkg.com" />
+    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+    <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="control-panel" aria-label="Route controls">
+        <div class="brand-block">
+          <div class="brand-mark" aria-hidden="true">A</div>
+          <div>
+            <p class="eyebrow">Cycling intelligence</p>
+            <h1>AeroRoute</h1>
+          </div>
+        </div>
+
+        <form class="route-form" id="routeForm">
+          <label class="field">
+            <span>Start</span>
+            <div class="input-shell">
+              <i data-lucide="map-pin" aria-hidden="true"></i>
+              <input
+                type="text"
+                id="startInput"
+                value="Riverside Station"
+                autocomplete="off"
+              />
+            </div>
+          </label>
+
+          <label class="field">
+            <span>Finish</span>
+            <div class="input-shell">
+              <i data-lucide="flag" aria-hidden="true"></i>
+              <input
+                type="text"
+                id="finishInput"
+                value="Lighthouse Loop"
+                autocomplete="off"
+              />
+            </div>
+          </label>
+
+          <div class="segmented-control" aria-label="Surface preference">
+            <button type="button" class="surface-option is-active" data-surface="balanced">
+              Balanced
+            </button>
+            <button type="button" class="surface-option" data-surface="pavement">
+              Pavement
+            </button>
+            <button type="button" class="surface-option" data-surface="gravel">
+              Gravel
+            </button>
+          </div>
+
+          <div class="slider-group">
+            <label for="climbSlider">
+              <span>Climbing appetite</span>
+              <strong id="climbValue">42</strong>
+            </label>
+            <input id="climbSlider" type="range" min="0" max="100" value="42" />
+          </div>
+
+          <div class="slider-group">
+            <label for="gravelSlider">
+              <span>Gravel priority</span>
+              <strong id="gravelValue">36</strong>
+            </label>
+            <input id="gravelSlider" type="range" min="0" max="100" value="36" />
+          </div>
+
+          <div class="slider-group">
+            <label for="windSlider">
+              <span>Wind avoidance</span>
+              <strong id="windValue">68</strong>
+            </label>
+            <input id="windSlider" type="range" min="0" max="100" value="68" />
+          </div>
+
+          <div class="switch-list">
+            <label class="switch-row">
+              <input id="headwindToggle" type="checkbox" checked />
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Avoid headwinds</span>
+            </label>
+            <label class="switch-row">
+              <input id="bikeLaneToggle" type="checkbox" checked />
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Prefer bike lanes</span>
+            </label>
+            <label class="switch-row">
+              <input id="scenicToggle" type="checkbox" />
+              <span class="switch-track" aria-hidden="true"></span>
+              <span>Scenic detours</span>
+            </label>
+          </div>
+
+          <button class="primary-action" type="submit">
+            <i data-lucide="route" aria-hidden="true"></i>
+            Build Route
+          </button>
+        </form>
+      </aside>
+
+      <main class="map-workspace">
+        <div class="map-toolbar" aria-label="Map layers">
+          <button class="icon-button layer-toggle is-active" data-layer="surface" title="Infrastructure layers">
+            <i data-lucide="layers-3" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button layer-toggle is-active" data-layer="slope" title="Elevation layers">
+            <i data-lucide="mountain" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button layer-toggle is-active" data-layer="weather" title="Weather layers">
+            <i data-lucide="wind" aria-hidden="true"></i>
+          </button>
+          <button class="icon-button" id="recenterButton" type="button" title="Recenter map">
+            <i data-lucide="crosshair" aria-hidden="true"></i>
+          </button>
+        </div>
+
+        <div class="weather-strip">
+          <span class="weather-item">
+            <i data-lucide="thermometer-sun" aria-hidden="true"></i>
+            <strong>21 C</strong>
+          </span>
+          <span class="weather-item">
+            <i data-lucide="cloud-rain" aria-hidden="true"></i>
+            <strong>18%</strong>
+          </span>
+          <span class="weather-item">
+            <i data-lucide="navigation" aria-hidden="true"></i>
+            <strong>WNW 24</strong>
+          </span>
+        </div>
+
+        <div class="metric-dock" aria-live="polite">
+          <div>
+            <span>Distance</span>
+            <strong id="distanceMetric">31.2 km</strong>
+          </div>
+          <div>
+            <span>Gain</span>
+            <strong id="gainMetric">360 m</strong>
+          </div>
+          <div>
+            <span>Time</span>
+            <strong id="timeMetric">1h 38m</strong>
+          </div>
+          <div>
+            <span>Route score</span>
+            <strong id="scoreMetric">88</strong>
+          </div>
+        </div>
+
+        <div id="map" aria-label="Interactive cycling map"></div>
+        <div class="map-fallback" id="mapFallback" hidden>
+          <strong>Map tiles need an internet connection.</strong>
+          <span>The route planner still works with local demo data.</span>
+        </div>
+        <div class="wind-field" id="windField" aria-hidden="true"></div>
+      </main>
+
+      <section class="activity-panel" aria-label="Activity dashboard">
+        <div class="route-insight">
+          <div class="insight-heading">
+            <p class="eyebrow">Active route</p>
+            <h2 id="routeName">Riverside to Lighthouse</h2>
+          </div>
+          <div class="score-ring" aria-label="Route quality score">
+            <span id="ringScore">88</span>
+          </div>
+        </div>
+
+        <div class="breakdown-grid">
+          <div>
+            <span>Pavement</span>
+            <strong id="pavementBreakdown">54%</strong>
+          </div>
+          <div>
+            <span>Gravel</span>
+            <strong id="gravelBreakdown">28%</strong>
+          </div>
+          <div>
+            <span>Bike lane</span>
+            <strong id="laneBreakdown">18%</strong>
+          </div>
+          <div>
+            <span>Wind hit</span>
+            <strong id="windBreakdown">Low</strong>
+          </div>
+        </div>
+
+        <label class="upload-zone" id="uploadZone">
+          <input id="gpxInput" type="file" accept=".gpx,.xml" />
+          <i data-lucide="upload-cloud" aria-hidden="true"></i>
+          <span>Import GPX</span>
+          <small>Garmin, Wahoo, Apple Watch exports</small>
+        </label>
+
+        <div class="feed-heading">
+          <h2>Recent rides</h2>
+          <button class="text-button" type="button" id="clearImportsButton">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+            Clear imports
+          </button>
+        </div>
+
+        <div class="activity-feed" id="activityFeed" aria-live="polite"></div>
+      </section>
+    </div>
+  </body>
+</html>
