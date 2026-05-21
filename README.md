@@ -33,8 +33,8 @@ Launch area: York Region and Toronto
 Ride types: All types
 Important roads/trails/neighborhoods: TBD
 Map provider: MapTiler
-Map style URL: TBD
-Public map token: Created in MapTiler; do not commit here
+Map style URL: MapTiler Outdoor in local config.js
+Public map token: Created in MapTiler and stored locally in config.js; do not commit
 Weather provider: TBD
 Routing engine: TBD
 OSM extract URL: TBD
@@ -67,7 +67,7 @@ Optional later detail:
 
 ### Step 2: Choose a map provider
 
-Status: in progress.
+Status: done for local development. Replace/restrict the key before production.
 
 You created a MapTiler API key. Since the key appeared in a screenshot, do one of these before using it in a public app:
 
@@ -107,15 +107,15 @@ Outdoor
 https://api.maptiler.com/maps/outdoor-v2/style.json?key=YOUR_MAPTILER_KEY
 ```
 
-What to send me next:
+Collected for local development:
 
 ```text
 Map provider: MapTiler
-Style URL:
-Public map token is restricted: yes/no
+Style URL: MapTiler Outdoor in local config.js
+Public map token is restricted: no, local development only
 ```
 
-Do not send the key if you are uncomfortable sharing it. You can say `key ready`, and I will show you where to paste it locally.
+Before production, replace this key and restrict the new production key to your real domain.
 
 ### Step 3: Create a weather API account
 
