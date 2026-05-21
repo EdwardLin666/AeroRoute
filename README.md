@@ -78,27 +78,30 @@ In MapTiler, collect:
 
 1. Go to `API Keys`.
 2. Open or edit the key.
-3. Set allowed HTTP origins for local development:
+3. MapTiler expects bare domains in `Allowed HTTP Origins`, not full URLs with `http://`, `https://`, or ports.
+4. For local testing, leave `Allowed HTTP Origins` empty for now. This lets the key work while the app is opened from `index.html` or a local dev server.
+5. When you have a real domain, create or update a production key and add only the domain name, for example:
 
 ```text
-http://localhost:*
-http://127.0.0.1:*
+your-domain.com
+*.your-domain.com
 ```
 
-4. Later, add the production website domain, for example:
+6. If MapTiler rejects local development because the request has no `Origin` or `Referer`, use this placeholder only for a temporary development key:
 
 ```text
-https://your-domain.com
+?
 ```
 
-5. Go to `Maps`.
-6. Pick a style. Recommended for this cycling app:
+7. Because a key appeared in a screenshot, replace this key before production.
+8. Go to `Maps`.
+9. Pick a style. Recommended for this cycling app:
 
 ```text
 Outdoor
 ```
 
-7. Copy the MapLibre/GL style URL. It will look similar to:
+10. Copy the MapLibre/GL style URL. It will look similar to:
 
 ```text
 https://api.maptiler.com/maps/outdoor-v2/style.json?key=YOUR_MAPTILER_KEY
