@@ -163,6 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initWindField();
   initMap();
   bindControls();
+  fetchWeather();
   renderActivities();
   updateRoute();
 });
@@ -198,6 +199,9 @@ function bindElements() {
     "recenterButton",
     "startInput",
     "finishInput",
+    "weatherTemp",
+    "weatherPrecip",
+    "weatherWind",
   ].forEach((id) => {
     elements[id] = document.getElementById(id);
   });
@@ -217,7 +221,9 @@ function initMap() {
 
   state.map = new maplibregl.Map({
     container: "map",
-    style: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
+    style:
+      window.AEROROUTE_CONFIG?.mapStyleUrl ||
+      "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
     center: [-79.3765, 43.6557],
     zoom: 11.4,
     pitch: 42,
@@ -425,6 +431,75 @@ function toggleLayer(button) {
   const id = layer === "surface" ? "surface-lines" : "slope-lines";
   const visibility = button.classList.contains("is-active") ? "visible" : "none";
   state.map.setLayoutProperty(id, "visibility", visibility);
+}
+
+async function fetchWeather() {
+  const config = window.AEROROUTE_CONFIG || {};
+  const apiKey = config.openWeatherMapApiKey;
+
+  if (!apiKey || apiKey.includes("YOUR_")) {
+    return;
+  }
+
+  const location = config.weatherLocation || {};
+  const lat = location.lat ?? 43.85;
+  const lon = location.lon ?? -79.38;
+  const units = config.weatherUnits || "metric";
+  const query = new URLSearchParams({
+    lat,
+    lon,
+    units,
+    appid: apiKey,
+  });
+
+  try {
+    const response = await fetch(
+      `https://api.openweathermap.org/data/2.5/forecast?${query}`,
+    );
+
+    if (!response.ok) {
+      throw new Error(`Weather request failed with ${response.status}`);
+    }
+
+    const forecast = await response.json();
+    const current = forecast.list?.[0];
+    if (!current) return;
+
+    const tempUnit = units === "imperial" ? "F" : "C";
+    const windUnit = units === "imperial" ? "mph" : "km/h";
+    const windSpeed =
+      units === "imperial" ? current.wind.speed : current.wind.speed * 3.6;
+    const windDirection = degreesToCompass(current.wind.deg || 0);
+
+    elements.weatherTemp.textContent = `${Math.round(current.main.temp)} ${tempUnit}`;
+    elements.weatherPrecip.textContent = `${Math.round((current.pop || 0) * 100)}%`;
+    elements.weatherWind.textContent = `${windDirection} ${Math.round(windSpeed)} ${windUnit}`;
+  } catch (error) {
+    document.querySelector(".weather-strip").title =
+      "Demo weather shown because OpenWeatherMap did not return live data.";
+  }
+}
+
+function degreesToCompass(degrees) {
+  const directions = [
+    "N",
+    "NNE",
+    "NE",
+    "ENE",
+    "E",
+    "ESE",
+    "SE",
+    "SSE",
+    "S",
+    "SSW",
+    "SW",
+    "WSW",
+    "W",
+    "WNW",
+    "NW",
+    "NNW",
+  ];
+  return directions[Math.round(degrees / 22.5) % directions.length];
 }
 
 function updateRoute(shouldFly = false) {

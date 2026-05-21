@@ -35,7 +35,9 @@ Important roads/trails/neighborhoods: TBD
 Map provider: MapTiler
 Map style URL: MapTiler Outdoor v4 in local config.js
 Public map token: Created in MapTiler and stored locally in config.js; do not commit
-Weather provider: TBD
+Weather provider: OpenWeatherMap
+Weather units: Metric
+Weather API key: Stored locally in config.js; do not commit
 Routing engine: TBD
 OSM extract URL: TBD
 Elevation provider: TBD
@@ -119,6 +121,8 @@ Before production, replace this key and restrict the new production key to your 
 
 ### Step 3: Create a weather API account
 
+Status: done for local development. Use a backend endpoint before production.
+
 Weather powers temperature, precipitation, wind speed, and wind direction.
 
 Recommended easiest option:
@@ -131,13 +135,17 @@ Collect:
 - API key.
 - Units: metric or imperial.
 
-What to send me:
+Collected for local development:
 
 ```text
-Weather provider:
-Units:
-API key is ready: yes/no
+Weather provider: OpenWeatherMap
+Units: Metric
+API key is ready: yes
 ```
+
+The key is stored in local `config.js`, which is ignored by git. The static prototype calls OpenWeatherMap directly from the browser for development. In production, move this key behind a backend endpoint so the secret is not exposed to users.
+
+If the weather strip still shows demo values, the key may not be active yet or OpenWeatherMap may be rejecting it. Wait a bit, then retry, or create a fresh OpenWeatherMap key.
 
 ### Step 4: Choose routing data
 

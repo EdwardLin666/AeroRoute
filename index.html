@@ -9,7 +9,9 @@
       content="AeroRoute is a context-aware cycling route planner with smart routing controls, weather overlays, and activity import tools."
     />
     <link rel="preconnect" href="https://unpkg.com" />
-    <link rel="preconnect" href="https://basemaps.cartocdn.com" />
+    <link rel="preconnect" href="https://api.maptiler.com" />
+    <link rel="preconnect" href="https://tiles.maptiler.com" />
+    <link rel="preconnect" href="https://api.openweathermap.org" />
     <link
       rel="stylesheet"
       href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css"
@@ -17,6 +19,7 @@
     <link rel="stylesheet" href="./styles.css" />
     <script defer src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
     <script defer src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <script defer src="./config.js"></script>
     <script defer src="./app.js"></script>
   </head>
   <body>
@@ -137,15 +140,15 @@
         <div class="weather-strip">
           <span class="weather-item">
             <i data-lucide="thermometer-sun" aria-hidden="true"></i>
-            <strong>21 C</strong>
+            <strong id="weatherTemp">21 C</strong>
           </span>
           <span class="weather-item">
             <i data-lucide="cloud-rain" aria-hidden="true"></i>
-            <strong>18%</strong>
+            <strong id="weatherPrecip">18%</strong>
           </span>
           <span class="weather-item">
             <i data-lucide="navigation" aria-hidden="true"></i>
-            <strong>WNW 24</strong>
+            <strong id="weatherWind">WNW 24</strong>
           </span>
         </div>
 
