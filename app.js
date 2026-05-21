@@ -155,6 +155,9 @@ const state = {
   importedActivities: [],
 };
 
+const WEATHER_CACHE_KEY = "aeroroute.weather.v1";
+const WEATHER_CACHE_MS = 30 * 60 * 1000;
+
 const elements = {};
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -445,6 +448,13 @@ async function fetchWeather() {
   const lat = location.lat ?? 43.85;
   const lon = location.lon ?? -79.38;
   const units = config.weatherUnits || "metric";
+  const cachedWeather = readCachedWeather(units);
+
+  if (cachedWeather) {
+    renderWeather(cachedWeather, units);
+    return;
+  }
+
   const query = new URLSearchParams({
     lat,
     lon,
@@ -465,19 +475,50 @@ async function fetchWeather() {
     const current = forecast.list?.[0];
     if (!current) return;
 
-    const tempUnit = units === "imperial" ? "F" : "C";
-    const windUnit = units === "imperial" ? "mph" : "km/h";
-    const windSpeed =
-      units === "imperial" ? current.wind.speed : current.wind.speed * 3.6;
-    const windDirection = degreesToCompass(current.wind.deg || 0);
-
-    elements.weatherTemp.textContent = `${Math.round(current.main.temp)} ${tempUnit}`;
-    elements.weatherPrecip.textContent = `${Math.round((current.pop || 0) * 100)}%`;
-    elements.weatherWind.textContent = `${windDirection} ${Math.round(windSpeed)} ${windUnit}`;
+    writeCachedWeather(current, units);
+    renderWeather(current, units);
   } catch (error) {
     document.querySelector(".weather-strip").title =
       "Demo weather shown because OpenWeatherMap did not return live data.";
   }
+}
+
+function readCachedWeather(units) {
+  try {
+    const cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || "null");
+    if (!cached || cached.units !== units) return null;
+    if (Date.now() - cached.savedAt > WEATHER_CACHE_MS) return null;
+    return cached.current;
+  } catch (error) {
+    return null;
+  }
+}
+
+function writeCachedWeather(current, units) {
+  try {
+    localStorage.setItem(
+      WEATHER_CACHE_KEY,
+      JSON.stringify({
+        current,
+        units,
+        savedAt: Date.now(),
+      }),
+    );
+  } catch (error) {
+    // Weather still renders if storage is unavailable.
+  }
+}
+
+function renderWeather(current, units) {
+  const tempUnit = units === "imperial" ? "F" : "C";
+  const windUnit = units === "imperial" ? "mph" : "km/h";
+  const windSpeed =
+    units === "imperial" ? current.wind.speed : current.wind.speed * 3.6;
+  const windDirection = degreesToCompass(current.wind.deg || 0);
+
+  elements.weatherTemp.textContent = `${Math.round(current.main.temp)} ${tempUnit}`;
+  elements.weatherPrecip.textContent = `${Math.round((current.pop || 0) * 100)}%`;
+  elements.weatherWind.textContent = `${windDirection} ${Math.round(windSpeed)} ${windUnit}`;
 }
 
 function degreesToCompass(degrees) {

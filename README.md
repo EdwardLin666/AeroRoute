@@ -38,6 +38,7 @@ Public map token: Created in MapTiler and stored locally in config.js; do not co
 Weather provider: OpenWeatherMap
 Weather units: Metric
 Weather API key: Stored locally in config.js; do not commit
+Weather call budget: 1000 calls/day plan; prototype caches weather for 30 minutes
 Routing engine: TBD
 OSM extract URL: TBD
 Elevation provider: TBD
@@ -145,7 +146,16 @@ API key is ready: yes
 
 The key is stored in local `config.js`, which is ignored by git. The static prototype calls OpenWeatherMap directly from the browser for development. In production, move this key behind a backend endpoint so the secret is not exposed to users.
 
-If the weather strip still shows demo values, the key may not be active yet or OpenWeatherMap may be rejecting it. Wait a bit, then retry, or create a fresh OpenWeatherMap key.
+The prototype caches successful weather responses in the browser for 30 minutes to avoid unnecessary API calls.
+
+Current key test result:
+
+```text
+First key: 401 Unauthorized
+Default key: 401 Unauthorized
+```
+
+If the weather strip still shows demo values, the key may not be active yet, copied incorrectly, or OpenWeatherMap may still be provisioning the plan. Wait a bit, then retry from the OpenWeatherMap dashboard.
 
 ### Step 4: Choose routing data
 
