@@ -152,10 +152,10 @@ Current key test result:
 
 ```text
 First key: 401 Unauthorized
-Default key: 401 Unauthorized
+Default key: OK
 ```
 
-If the weather strip still shows demo values, the key may not be active yet, copied incorrectly, or OpenWeatherMap may still be provisioning the plan. Wait a bit, then retry from the OpenWeatherMap dashboard.
+If the weather strip still shows demo values, refresh the page. The prototype caches successful weather responses for 30 minutes to protect the daily call budget.
 
 ### Step 4: Choose routing data
 
