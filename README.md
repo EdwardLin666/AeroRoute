@@ -41,7 +41,9 @@ Weather API key: Stored locally in config.js; do not commit
 Weather call budget: 1000 calls/day plan; prototype caches weather for 30 minutes
 Routing engine: TBD
 OSM extract URL: GTA BBBike `.osm.pbf` placed in custom_files; North America file deleted
-Elevation provider: TBD
+Elevation provider: OpenTopoData ASTER 30m
+Elevation API key: none needed for public API
+Elevation coverage checked: yes, York Region and Toronto returned values
 Database provider: TBD
 User accounts needed: TBD
 Sample GPX files ready: TBD
@@ -240,13 +242,25 @@ Docker installed:
 
 ### Step 5: Choose elevation data
 
+Status: selected and coverage checked, not integrated into route metrics yet.
+
 Elevation is needed for climbing, slope coloring, and route gain calculations.
 
 Simplest options:
 
-- OpenTopoData API for early development.
+- OpenTopoData ASTER 30m public API for early development.
 - MapTiler terrain/elevation services if available in your plan.
 - Local DEM files later for production-quality routing.
+
+Collected:
+
+```text
+Elevation provider: OpenTopoData ASTER 30m
+API key needed: no
+Coverage checked: yes
+```
+
+`Coverage checked` means confirming the provider has usable elevation/terrain data for the launch area: York Region and Toronto. OpenTopoData ASTER returned elevations for Toronto City Hall, Richmond Hill, Markham, Vaughan, and Scarborough.
 
 Collect:
 

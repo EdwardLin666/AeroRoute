@@ -9,4 +9,6 @@ window.AEROROUTE_CONFIG = {
   },
   valhallaUrl: "http://localhost:8002",
   useValhalla: true,
+  elevationProvider: "opentopodata",
+  elevationUrl: "https://api.opentopodata.org/v1/aster30m",
 };
