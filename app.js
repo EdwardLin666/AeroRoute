@@ -147,12 +147,47 @@ const defaultActivities = [
   },
 ];
 
+const routePresets = {
+  toronto_city_hall: {
+    label: "Toronto City Hall",
+    lat: 43.6535,
+    lon: -79.3839,
+  },
+  waterfront_trail: {
+    label: "Waterfront Trail",
+    lat: 43.6384,
+    lon: -79.3817,
+  },
+  scarborough_town_centre: {
+    label: "Scarborough Town Centre",
+    lat: 43.7764,
+    lon: -79.2579,
+  },
+  markham_unionville: {
+    label: "Markham Unionville",
+    lat: 43.8681,
+    lon: -79.3124,
+  },
+  richmond_hill_centre: {
+    label: "Richmond Hill Centre",
+    lat: 43.8546,
+    lon: -79.4365,
+  },
+  vaughan_metropolitan_centre: {
+    label: "Vaughan Metropolitan Centre",
+    lat: 43.7942,
+    lon: -79.5278,
+  },
+};
+
 const state = {
   surface: "balanced",
   map: null,
   mapReady: false,
   windVisible: true,
   importedActivities: [],
+  activeRouteCoordinates: routeVariants.balanced,
+  routeSource: "demo",
 };
 
 const WEATHER_CACHE_KEY = "aeroroute.weather.v1";
@@ -205,6 +240,7 @@ function bindElements() {
     "weatherTemp",
     "weatherPrecip",
     "weatherWind",
+    "routeStatus",
   ].forEach((id) => {
     elements[id] = document.getElementById(id);
   });
@@ -349,6 +385,8 @@ function addDemoLayers() {
 }
 
 function bindControls() {
+  populateRoutePresets();
+
   document.querySelectorAll(".surface-option").forEach((button) => {
     button.addEventListener("click", () => {
       document
@@ -370,13 +408,13 @@ function bindControls() {
     elements.startInput,
     elements.finishInput,
   ].forEach((control) => {
-    control.addEventListener("input", updateRoute);
-    control.addEventListener("change", updateRoute);
+    control.addEventListener("input", handleRouteControlChange);
+    control.addEventListener("change", handleRouteControlChange);
   });
 
   elements.routeForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    updateRoute(true);
+    buildValhallaRoute();
   });
 
   document.querySelectorAll(".layer-toggle").forEach((button) => {
@@ -418,6 +456,28 @@ function bindControls() {
     state.importedActivities = [];
     renderActivities();
   });
+}
+
+function handleRouteControlChange() {
+  state.routeSource = "demo";
+  setRouteStatus("Preferences changed, click Build Route", "");
+  updateRoute();
+}
+
+function populateRoutePresets() {
+  const startDefault = "toronto_city_hall";
+  const finishDefault = "richmond_hill_centre";
+  const options = Object.entries(routePresets)
+    .map(
+      ([value, preset]) =>
+        `<option value="${value}">${escapeHtml(preset.label)}</option>`,
+    )
+    .join("");
+
+  elements.startInput.innerHTML = options;
+  elements.finishInput.innerHTML = options;
+  elements.startInput.value = startDefault;
+  elements.finishInput.value = finishDefault;
 }
 
 function toggleLayer(button) {
@@ -543,6 +603,160 @@ function degreesToCompass(degrees) {
   return directions[Math.round(degrees / 22.5) % directions.length];
 }
 
+async function buildValhallaRoute() {
+  const config = window.AEROROUTE_CONFIG || {};
+  const values = readPreferenceValues();
+  const start = routePresets[elements.startInput.value];
+  const finish = routePresets[elements.finishInput.value];
+
+  if (!config.useValhalla || !config.valhallaUrl || !start || !finish) {
+    setRouteStatus("Demo route active", "error");
+    updateRoute(true);
+    return;
+  }
+
+  setRouteStatus("Building route with local Valhalla...", "live");
+  setRouteLoading(true);
+
+  try {
+    const response = await fetch(`${config.valhallaUrl}/route`, {
+      method: "POST",
+      headers: {
+        // Keep this a CORS "simple request"; Valhalla does not answer OPTIONS preflight.
+        "Content-Type": "text/plain",
+      },
+      body: JSON.stringify(makeValhallaRequest(start, finish, values)),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Valhalla returned ${response.status}`);
+    }
+
+    const data = await response.json();
+    const leg = data.trip?.legs?.[0];
+    const summary = data.trip?.summary;
+    const coordinates = decodeValhallaShape(leg?.shape || "");
+
+    if (!summary || coordinates.length < 2) {
+      throw new Error("Valhalla response did not include a route shape");
+    }
+
+    state.activeRouteCoordinates = coordinates;
+    state.routeSource = "valhalla";
+    renderValhallaRoute(summary, values, coordinates);
+    setRouteStatus("Live Valhalla route", "live");
+  } catch (error) {
+    state.routeSource = "demo";
+    setRouteStatus("Valhalla unavailable, showing demo route", "error");
+    updateRoute(true);
+  } finally {
+    setRouteLoading(false);
+  }
+}
+
+function makeValhallaRequest(start, finish, values) {
+  return {
+    locations: [
+      {
+        lat: start.lat,
+        lon: start.lon,
+      },
+      {
+        lat: finish.lat,
+        lon: finish.lon,
+      },
+    ],
+    costing: "bicycle",
+    costing_options: {
+      bicycle: {
+        bicycle_type: values.surface === "gravel" ? "Hybrid" : "Road",
+        use_roads: values.preferBikeLanes ? 0.35 : 0.55,
+        use_hills: clamp(values.climb / 100, 0, 1),
+        use_living_streets: 0.55,
+      },
+    },
+    directions_options: {
+      units: "kilometers",
+    },
+  };
+}
+
+function renderValhallaRoute(summary, values, coordinates) {
+  const metrics = calculateMetrics(values, coordinates, {
+    distance: summary.length,
+    minutes: Math.round(summary.time / 60),
+  });
+
+  elements.routeName.textContent = makeRouteTitle();
+  elements.distanceMetric.textContent = `${summary.length.toFixed(1)} km`;
+  elements.gainMetric.textContent = `${metrics.gain} m`;
+  elements.timeMetric.textContent = formatMinutes(Math.round(summary.time / 60));
+  elements.scoreMetric.textContent = metrics.score;
+  elements.ringScore.textContent = metrics.score;
+  elements.pavementBreakdown.textContent = `${metrics.pavement}%`;
+  elements.gravelBreakdown.textContent = `${metrics.gravelShare}%`;
+  elements.laneBreakdown.textContent = `${metrics.lane}%`;
+  elements.windBreakdown.textContent = metrics.windLabel;
+  updateScoreRing(metrics.score);
+
+  if (state.mapReady) {
+    state.map.getSource("active-route").setData(makeRouteFeature(coordinates));
+    state.map.setPaintProperty("active-route", "line-color", metrics.color);
+    flyToRoute(coordinates);
+  }
+}
+
+function decodeValhallaShape(shape) {
+  let index = 0;
+  let lat = 0;
+  let lon = 0;
+  const coordinates = [];
+
+  while (index < shape.length) {
+    const latitudeResult = decodePolylineChunk(shape, index);
+    index = latitudeResult.index;
+    lat += latitudeResult.value;
+
+    const longitudeResult = decodePolylineChunk(shape, index);
+    index = longitudeResult.index;
+    lon += longitudeResult.value;
+
+    coordinates.push([lon * 1e-6, lat * 1e-6]);
+  }
+
+  return coordinates;
+}
+
+function decodePolylineChunk(shape, startIndex) {
+  let result = 1;
+  let shift = 0;
+  let index = startIndex;
+  let byte = null;
+
+  do {
+    byte = shape.charCodeAt(index++) - 63 - 1;
+    result += byte << shift;
+    shift += 5;
+  } while (byte >= 0x1f);
+
+  return {
+    index,
+    value: result & 1 ? ~(result >> 1) : result >> 1,
+  };
+}
+
+function setRouteStatus(message, variant = "") {
+  elements.routeStatus.textContent = message;
+  elements.routeStatus.classList.toggle("is-live", variant === "live");
+  elements.routeStatus.classList.toggle("is-error", variant === "error");
+}
+
+function setRouteLoading(isLoading) {
+  const button = elements.routeForm.querySelector(".primary-action");
+  button.disabled = isLoading;
+  button.classList.toggle("is-loading", isLoading);
+}
+
 function updateRoute(shouldFly = false) {
   const values = readPreferenceValues();
   elements.climbValue.textContent = values.climb;
@@ -598,8 +812,9 @@ function selectRouteVariant(values) {
   return routeVariants.balanced;
 }
 
-function calculateMetrics(values, route) {
-  const distance = routeDistance(route) * 3.2 * (values.scenic ? 1.08 : 1);
+function calculateMetrics(values, route, overrides = {}) {
+  const distance =
+    overrides.distance ?? routeDistance(route) * 3.2 * (values.scenic ? 1.08 : 1);
   const gravelBias = values.surface === "gravel" ? 18 : 0;
   const pavementBias = values.surface === "pavement" ? 20 : 0;
   const laneBoost = values.preferBikeLanes ? 12 : -6;
@@ -616,7 +831,8 @@ function calculateMetrics(values, route) {
   const gravelShare = clamp(Math.round(22 + values.gravel * 0.48 + gravelBias), 6, 78);
   const lane = clamp(Math.round(20 + laneBoost + values.wind * 0.08), 8, 48);
   const pavement = clamp(100 - gravelShare - lane + pavementBias, 16, 84);
-  const minutes = Math.round((distance / 20.5) * 60 + gain / 42 + windPenalty);
+  const minutes =
+    overrides.minutes ?? Math.round((distance / 20.5) * 60 + gain / 42 + windPenalty);
   const color = score > 86 ? "#00e0b4" : score > 74 ? "#f2b84b" : "#ed665d";
 
   return {
@@ -641,8 +857,8 @@ function updateScoreRing(score) {
 }
 
 function makeRouteTitle() {
-  const start = elements.startInput.value.trim() || "Start";
-  const finish = elements.finishInput.value.trim() || "Finish";
+  const start = routePresets[elements.startInput.value]?.label || "Start";
+  const finish = routePresets[elements.finishInput.value]?.label || "Finish";
   return `${start} to ${finish}`;
 }
 

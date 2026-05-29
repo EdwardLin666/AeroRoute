@@ -1,0 +1,17 @@
+services:
+  valhalla:
+    image: ghcr.io/valhalla/valhalla-scripted:latest
+    container_name: aeroroute-valhalla
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./custom_files:/custom_files
+    environment:
+      server_threads: "4"
+      use_tiles_ignore_pbf: "False"
+      force_rebuild: "False"
+      build_tar: "True"
+      build_elevation: "False"
+      build_admins: "True"
+      build_time_zones: "True"
+      serve_tiles: "True"

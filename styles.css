@@ -38,7 +38,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -146,7 +147,8 @@ h2 {
   color: var(--muted);
 }
 
-.input-shell input {
+.input-shell input,
+.input-shell select {
   min-width: 0;
   width: 100%;
   border: 0;
@@ -154,6 +156,26 @@ h2 {
   background: transparent;
   color: var(--ink);
   font-weight: 700;
+}
+
+.input-shell select {
+  min-height: 42px;
+}
+
+.route-status {
+  min-height: 18px;
+  margin: -6px 0 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.route-status.is-live {
+  color: var(--teal-deep);
+}
+
+.route-status.is-error {
+  color: var(--coral);
 }
 
 .input-shell svg,
@@ -284,6 +306,11 @@ input[type="range"] {
 
 .primary-action:active {
   transform: translateY(1px);
+}
+
+.primary-action:disabled {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .map-workspace {

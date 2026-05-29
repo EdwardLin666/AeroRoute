@@ -38,12 +38,10 @@
             <span>Start</span>
             <div class="input-shell">
               <i data-lucide="map-pin" aria-hidden="true"></i>
-              <input
-                type="text"
+              <select
                 id="startInput"
-                value="Riverside Station"
                 autocomplete="off"
-              />
+              ></select>
             </div>
           </label>
 
@@ -51,14 +49,16 @@
             <span>Finish</span>
             <div class="input-shell">
               <i data-lucide="flag" aria-hidden="true"></i>
-              <input
-                type="text"
+              <select
                 id="finishInput"
-                value="Lighthouse Loop"
                 autocomplete="off"
-              />
+              ></select>
             </div>
           </label>
+
+          <p class="route-status" id="routeStatus">
+            Local Valhalla routing ready
+          </p>
 
           <div class="segmented-control" aria-label="Surface preference">
             <button type="button" class="surface-option is-active" data-surface="balanced">

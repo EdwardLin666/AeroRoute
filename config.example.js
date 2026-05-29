@@ -7,4 +7,6 @@ window.AEROROUTE_CONFIG = {
     lon: -79.38,
     label: "York Region and Toronto",
   },
+  valhallaUrl: "http://localhost:8002",
+  useValhalla: true,
 };

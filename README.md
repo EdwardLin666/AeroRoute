@@ -40,7 +40,7 @@ Weather units: Metric
 Weather API key: Stored locally in config.js; do not commit
 Weather call budget: 1000 calls/day plan; prototype caches weather for 30 minutes
 Routing engine: TBD
-OSM extract URL: TBD
+OSM extract URL: GTA BBBike `.osm.pbf` placed in custom_files; North America file deleted
 Elevation provider: TBD
 Database provider: TBD
 User accounts needed: TBD
@@ -159,7 +159,64 @@ If the weather strip still shows demo values, refresh the page. The prototype ca
 
 ### Step 4: Choose routing data
 
+Status: mostly done for local development.
+
 Routing needs OpenStreetMap data for York Region and Toronto. The recommended routing engine is Valhalla.
+
+Collected:
+
+```text
+Routing engine: Valhalla
+Docker installed: yes
+Docker Desktop daemon running: yes
+Valhalla clone: C:\AeroRoute\valhalla
+North America PBF: deleted
+GTA BBBike PBF: C:\AeroRoute\custom_files\gta.osm.pbf
+GTA BBBike GeoPackage: C:\AeroRoute\planet_-80.237,43.342_-78.275,44.368-geopackage
+Local compose file: C:\AeroRoute\docker-compose.valhalla.yml
+Valhalla local service: running at http://localhost:8002
+Test bicycle route: OK, 28.213 km
+Website Valhalla integration: wired in app.js with preset route points
+```
+
+Important: use the GTA BBBike extract for the first local routing test.
+
+Next steps:
+
+1. Start Docker Desktop.
+2. Clear old generated Valhalla outputs from `custom_files`, but keep `valhalla.json` if you want to reuse the config.
+3. Confirm the GTA `.osm.pbf` file is in `C:\AeroRoute\custom_files\gta.osm.pbf`.
+4. From `C:\AeroRoute`, run:
+
+```powershell
+docker compose -f docker-compose.valhalla.yml up -d
+docker logs -f aeroroute-valhalla
+```
+
+5. When the service starts, test it:
+
+```powershell
+.\routing\test-valhalla-route.ps1
+```
+
+6. Open `index.html`, choose preset start/finish points, and click `Build Route`.
+
+The website calls:
+
+```text
+http://localhost:8002/route
+```
+
+The browser request uses `Content-Type: text/plain` intentionally. Valhalla accepts the JSON body, and this avoids a CORS preflight request because Valhalla responds `405` to `OPTIONS`.
+
+If Valhalla is not running, the website falls back to the demo route.
+
+Current limitations:
+
+- Start/finish are preset places, not address search yet.
+- Route preferences are mapped to basic Valhalla bicycle options; wind-aware costing is still future work.
+- Elevation is not connected to Valhalla yet.
+- The static website calls Valhalla directly. A production app should call it through a backend API.
 
 Recommended path:
 
